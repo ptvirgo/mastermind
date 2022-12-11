@@ -9,11 +9,12 @@ import Effect (Effect)
 import Effect.Class (class MonadEffect)
 import Effect.Random (randomInt)
 
-import Halogen as H
+{-A generic MasterMind game interface
 
-{-A generic MasterMind game interface -}
+This should provide a generic engine for running a MasterMind style code breaking game, without assuming the length of the game or the type of code being played with.
 
-{-
+For example, the original Mastermind uses four colored pegs and 8 - 12 guesses and 8 - 12 guesses. If someone wanted to instead use 5 letters and 6 guesses (Wordle), it should be possible to use this library to implement the mechanic.
+
     - *target* represents the type of data that the player should guess. Traditional example might be a FourColors type.
     - FeedBack represents the coded response to a single element of a guess.
 
@@ -47,35 +48,27 @@ type Board target =
 
 {- Arguments should take form `evalGuess target guess` so that a curried `evalGuess target` function is easy to produce`-}
 class MasterMind target where
-    winningGuess :: target -> target -> Boolean
     generateTarget :: Effect target
     evalGuess :: target -> target -> Array FeedBack
 
 new :: forall target. MasterMind target => target -> Board target
 new target = { target : target, turns: mempty }
 
-takeTurn:: forall target. MasterMind target => Board target -> target -> Board target
-takeTurn board newGuess = board { turns = snoc board.turns $ { guess: newGuess, feedback: sort $ evalGuess board.target newGuess }}
+initialize :: forall target. MasterMind target => Effect (Board target)
+initialize = do
+    target <- generateTarget
+    pure $ new target
+
+takeTurn :: forall target. MasterMind target => target -> Board target -> Board target
+takeTurn newGuess board = board { turns = snoc board.turns $ { guess: newGuess, feedback: evalGuess board.target newGuess }}
 
 
 {- Helpers -}
 
-randomChoice :: forall a. a -> Array a -> Effect a    
+randomChoice :: forall a. a -> Array a -> Effect a
 randomChoice defaultChoice choices =     
   do    
     selected <- randomInt 0 (length choices)    
     case choices !! selected of    
       Just c -> pure c    
       Nothing -> pure defaultChoice
-
-{- Halogen -}
-
-type State target = Board target
-
-data Action target = Initialize | TakeTurn target
-
-handleAction :: forall target query output m. MonadEffect m => MasterMind target => Action target -> H.HalogenM (State target) (Action target) query output m Unit
-handleAction Initialize = do
-       target :: target <- H.liftEffect generateTarget
-       H.modify_ (\_ -> new target)
-handleAction (TakeTurn turn) = H.modify_ \state -> takeTurn state turn
