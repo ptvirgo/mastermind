@@ -2,6 +2,9 @@ module Main where
 
 import Prelude
 
+import Control.Applicative (when)
+{- import Control.Monad.Trans.Class (lift) -}
+
 import Data.Array as Array
 import Data.List
 import Data.Maybe (Maybe(..))
@@ -86,7 +89,10 @@ instance masterMindFourColors :: MM.MasterMind FourColors where
 
 {- Four Colors Game in Halogen
 
-    html code for "black large circle" as a character - &#11044; 
+    - html character codes
+        - "black large circle" - &#11044; 
+        - "black large square" - &#11035;
+        - "black diamond centred" - &#11201;
 
     - parent
         - states
@@ -99,16 +105,15 @@ instance masterMindFourColors :: MM.MasterMind FourColors where
             - begin
             - take turn
 
+    - choose component
+        - state (record)
+            - active :: boolean
+            - pick :: Maybe Color
+            - one :: Maybe Color
+            - two :: Maybe Color
+            - three :: Maybe Color
+            - four :: Maybe Color
 
-    - board component
-        - internal actions
-            - none
-        - queries (parent controls)
-            - handle new guess (take turn)
-        - output (child alert parent)
-            - TurnMatched Boolean (took a turn. did it match?
-
-    - selector component
         - input (parent sends per render)
             - active boolean (should the component keep doing input? a won / lost game could simply not render a selector, but this is partly a practice)
         - internal actions
@@ -116,15 +121,16 @@ instance masterMindFourColors :: MM.MasterMind FourColors where
             - apply color to position
         - output (child alerts parent)
             - new guess
-    
+ fog869vat84type   
 -}
 
 type Slot =
     ( board :: H.Slot BoardQuery Void Int
+    , chooser :: H.Slot ChooserQuery ChooserOutput Int
     )           
 
-data GameState = GamePlay Int
-data GameAction = New FourColors | TakeTurn (MM.Turn FourColors)
+data GameState = GamePlay Int | GameOver Boolean
+data GameAction = HandleChooser ChooserOutput
 
 gameLength :: Int
 gameLength = 10
@@ -135,19 +141,43 @@ game =
         { initialState
         , render
         , eval: H.mkEval $ H.defaultEval
+            { handleAction = handleAction }
         }
     where
 
     initialState :: input -> GameState
     initialState _ = GamePlay 0
 
-    render :: forall action. GameState -> H.ComponentHTML action Slot m
+    handleAction :: GameAction -> H.HalogenM GameState GameAction Slot output m Unit
+    handleAction (HandleChooser (TakeTurn fc)) = do
+        ev <- H.request _board 0 (EvalTurn fc)
+        case ev of
+            Just turnWon -> H.modify_ $ handleTurn turnWon
+            Nothing -> pure unit
+
+    handleTurn :: Boolean -> GameState -> GameState
+    handleTurn true _ = GameOver true
+    handleTurn _ (GamePlay x) =
+        if x < gameLength
+            then GamePlay ( x + 1 )
+            else GameOver false
+    handleTurn _ over = over
+
+
+    render :: GameState -> H.ComponentHTML GameAction Slot m
     render ( GamePlay turnsTaken ) =
         HH.div_
         [ HH.p_ [ HH.text $ "Turns taken " <> show turnsTaken ]
         , HH.slot_ _board 0 board Nothing
+        , HH.slot_ _chooser 1 chooser { active: true }
         ]
-    
+    render ( GameOver won ) =
+        HH.div_
+        [ HH.p_ [ HH.text $ "You have " <> if won then "won" else "lost" <> " the game."
+                , HH.slot_ _board 0 board Nothing
+                , HH.slot_ _chooser 1 chooser { active: true }
+                ]
+        ]
 
 {- Board Component -}
 
@@ -189,3 +219,57 @@ board = H.mkComponent
         render :: forall m. BoardState -> H.ComponentHTML BoardAction () m
         render Nothing = HH.p_ [ HH.text "Loading Board" ]
         render (Just b) = HH.p_ [ HH.text $ show b.target ]
+
+
+{- Selector Component -}
+
+_chooser = Proxy :: Proxy "chooser"
+
+type ChooserState =
+    { active :: Boolean
+    , pick   :: Maybe Color
+    , one    :: Maybe Color
+    , two    :: Maybe Color
+    , three  :: Maybe Color
+    , four   :: Maybe Color
+    }
+
+type ChooserInput = { active :: Boolean }
+
+data ChooserAction = SetPick Color | SetOne Color | SetTwo Color | SetThree Color | SetFour Color | ChooserReceive ChooserInput | Submit FourColors
+
+data ChooserOutput = TakeTurn FourColors
+data ChooserQuery a = SetActive Boolean a
+
+
+chooser :: forall query m. H.Component query ChooserInput ChooserOutput m
+chooser = H.mkComponent
+    { initialState
+    , render
+    , eval: H.mkEval $ H.defaultEval
+        { handleAction = handleAction
+        , receive = Just <<< ChooserReceive
+        }
+    } where
+
+        initialState :: ChooserInput -> ChooserState
+        initialState input =
+            { active: input.active
+            , pick: Nothing
+            , one: Nothing
+            , two: Nothing
+            , three: Nothing
+            , four: Nothing
+            }
+
+        render :: forall m. ChooserState -> H.ComponentHTML ChooserAction () m
+        render cs = HH.p_ [ HH.text  "Your chooser goes here." ]
+
+        handleAction :: ChooserAction -> H.HalogenM ChooserState ChooserAction () ChooserOutput m Unit
+        handleAction (SetPick c) = H.modify_ \state -> state { pick = Just c }
+        handleAction (SetOne c) = H.modify_ \state -> state { one = Just c }
+        handleAction (SetTwo c) = H.modify_ \state -> state { two = Just c }
+        handleAction (SetThree c) = H.modify_ \state -> state { three = Just c }
+        handleAction (SetFour c) = H.modify_ \state -> state { four = Just c }
+        handleAction (ChooserReceive input) = H.modify_ \state -> state { active = input.active }
+        handleAction (Submit fc) = H.raise $ TakeTurn fc
