@@ -6,8 +6,7 @@ import Control.Applicative (when)
 {- import Control.Monad.Trans.Class (lift) -}
 
 import Data.Array as Array
-import Data.Char (fromCharCode)
-import Data.String.CodeUnits (singleton)
+import Data.String (toLower)
 import Data.List
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..), uncurry, fst, snd)
@@ -249,8 +248,45 @@ board = H.mkComponent
 
         render :: forall m. BoardState -> H.ComponentHTML BoardAction () m
         render Nothing = HH.p_ [ HH.text "Loading Board" ]
-        render (Just b) = HH.p_ [ HH.text $ show b.target ]
+        render (Just b) =
+            HH.div
+                [ HP.classes [ ClassName "board" ] ]
+                $ map renderTurn b.turns
 
+        renderTurn :: forall w i. MM.Turn FourColors -> HH.HTML w i
+        renderTurn t =
+            HH.div
+                [ HP.classes [ ClassName "turn" ]]
+                [ HH.span_ $ Array.fromFoldable $ map renderPeg (fcList t.guess)
+                , HH.span_ $ Array.fromFoldable $ map renderFeedBack t.feedback
+                ]
+
+        renderPeg :: forall w i. Color -> HH.HTML w i
+        renderPeg color =
+            SVG.svg
+                [ SVGAttr.height svgSmall
+                , SVGAttr.width svgSmall
+                ]
+                [ SVG.circle
+                    [ SVGAttr.r (svgSmall / 2.0 * svgRatio)
+                    , SVGAttr.cx (svgSmall / 2.0)
+                    , SVGAttr.cy (svgSmall / 2.0)
+                    , SVGAttr.classes [ ClassName $ show color ] 
+                    ]
+                ]
+
+        renderFeedBack :: forall w i. MM.FeedBack -> HH.HTML w i
+        renderFeedBack fb =
+            SVG.svg
+                [ SVGAttr.height svgSmall
+                , SVGAttr.width svgSmall
+                ]
+                [ SVG.rect
+                    [ SVGAttr.width $ svgSmall * svgRatio
+                    , SVGAttr.height $ svgSmall * svgRatio
+                    , SVGAttr.classes [ ClassName <<< toLower <<< show $ fb ]
+                    ]
+                ]
 
 {- Selector Component -}
 
@@ -334,12 +370,6 @@ chooser = H.mkComponent
 
         pegClasses :: Maybe Color -> Array ClassName
         pegClasses mc = [ ClassName "peg", ClassName $ fromMaybe "unselected" ( show <$> mc ) ]
-
-        {- renderColor :: Maybe Color -> Color -> H.ComponentHTML ChooserAction () m
-        renderColor pick c = HH.span [ HP.classes $ colorClasses pick c, HE.onClick (\_ -> SetPick c ) ]
-                                     [ HH.text colorSelector ]
-
-        -}
 
         renderColor :: Maybe Color -> Color -> H.ComponentHTML ChooserAction () m
         renderColor pick c =

@@ -36,3 +36,11 @@
     stroke: #66d;
     stroke-width: 5;
 }
+
+.correct {
+    fill: #222;
+}
+
+.partial {
+    fill: #eee;
+}
