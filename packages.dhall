@@ -101,5 +101,26 @@ in  upstream
 let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.15.0-20220527/packages.dhall
         sha256:15dd8041480502850e4043ea2977ed22d6ab3fc24d565211acde6f8c5152a799
-
 in  upstream
+    with
+    halogen-svg-elems =
+        { dependencies =
+            [ "aff"
+            , "arrays"
+            , "effect"
+            , "foldable-traversable"
+            , "halogen"
+            , "halogen-hooks"
+            , "maybe"
+            , "newtype"
+            , "prelude"
+            , "safe-coerce"
+            , "strings"
+            , "tuples"
+            , "typelevel-prelude"
+            , "web-dom"
+            , "web-uievents"
+            ] 
+        , repo = "https://github.com/JordanMartinez/purescript-halogen-svg-elems"
+        , version = "v7.0.0"
+        }

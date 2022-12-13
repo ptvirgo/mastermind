@@ -6,8 +6,10 @@ import Control.Applicative (when)
 {- import Control.Monad.Trans.Class (lift) -}
 
 import Data.Array as Array
+import Data.Char (fromCharCode)
+import Data.String.CodeUnits (singleton)
 import Data.List
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..), uncurry, fst, snd)
 
 import Effect (Effect)
@@ -21,7 +23,11 @@ import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 import Halogen.VDom.Driver (runUI)
 
+import Halogen.Svg.Elements as SVG
+import Halogen.Svg.Attributes as SVGAttr
+
 import Type.Proxy (Proxy(..))
+import Web.HTML.Common (ClassName(..))
 
 import MasterMind as MM
 
@@ -32,6 +38,20 @@ main = HAff.runHalogenAff do
   body <- HAff.awaitBody
   runUI game unit body
 
+{- Constants -}
+
+svgLarge :: Number
+svgLarge = 60.0
+
+svgMedium :: Number
+svgMedium = 40.0
+
+svgSmall :: Number
+svgSmall = 30.0
+
+svgRatio :: Number
+svgRatio = 0.9
+
 {- Data Definitions -}
 
 data Color = Red | Orange | Yellow | Green | Blue | Purple 
@@ -40,12 +60,12 @@ derive instance eqColor :: Eq Color
 derive instance ordColor :: Ord Color
 
 instance showColor :: Show Color where
-    show Red = "Red"
-    show Orange = "Orange"
-    show Yellow = "Yellow"
-    show Green = "Green"
-    show Blue = "Blue"
-    show Purple = "Purple"
+    show Red = "red"
+    show Orange = "orange"
+    show Yellow = "yellow"
+    show Green = "green"
+    show Blue = "blue"
+    show Purple = "purple"
 
 colors :: Array Color
 colors = [ Red, Orange, Yellow, Green, Blue, Purple ]
@@ -87,9 +107,18 @@ instance masterMindFourColors :: MM.MasterMind FourColors where
 
     evalGuess target guess = Array.fromFoldable $ getCorrect target guess <> getPartial target guess
 
-{- Four Colors Game in Halogen
+colorPeg :: String
+colorPeg = " 0 "
 
+colorSelector :: String
+colorSelector = " A "
+
+feedbackPeg :: String
+feedbackPeg = " F "
+
+{- Four Colors Game in Halogen
     - html character codes
+        - "⬤ ⬛ ⯁
         - "black large circle" - &#11044; 
         - "black large square" - &#11035;
         - "black diamond centred" - &#11201;
@@ -141,7 +170,8 @@ game =
         { initialState
         , render
         , eval: H.mkEval $ H.defaultEval
-            { handleAction = handleAction }
+            { handleAction = handleAction
+            }
         }
     where
 
@@ -158,26 +188,27 @@ game =
     handleTurn :: Boolean -> GameState -> GameState
     handleTurn true _ = GameOver true
     handleTurn _ (GamePlay x) =
-        if x < gameLength
+        if x < (gameLength - 1)
             then GamePlay ( x + 1 )
             else GameOver false
     handleTurn _ over = over
 
 
     render :: GameState -> H.ComponentHTML GameAction Slot m
-    render ( GamePlay turnsTaken ) =
+    render gameState =
         HH.div_
-        [ HH.p_ [ HH.text $ "Turns taken " <> show turnsTaken ]
+        [ HH.p_ [ HH.text $ gameMessage gameState ]
         , HH.slot_ _board 0 board Nothing
-        , HH.slot_ _chooser 1 chooser { active: true }
+        , HH.slot _chooser 1 chooser { active: activeGame gameState } HandleChooser
         ]
-    render ( GameOver won ) =
-        HH.div_
-        [ HH.p_ [ HH.text $ "You have " <> if won then "won" else "lost" <> " the game."
-                , HH.slot_ _board 0 board Nothing
-                , HH.slot_ _chooser 1 chooser { active: true }
-                ]
-        ]
+
+    gameMessage :: GameState -> String
+    gameMessage (GamePlay turns) = "Turns Taken: " <> show turns
+    gameMessage (GameOver won) = "You have " <> if won then "won" else "lost" <> " the game."
+
+    activeGame :: GameState -> Boolean
+    activeGame (GamePlay _) = true
+    activeGame _ = false
 
 {- Board Component -}
 
@@ -236,7 +267,7 @@ type ChooserState =
 
 type ChooserInput = { active :: Boolean }
 
-data ChooserAction = SetPick Color | SetOne Color | SetTwo Color | SetThree Color | SetFour Color | ChooserReceive ChooserInput | Submit FourColors
+data ChooserAction = SetPick Color | SetOne | SetTwo | SetThree | SetFour | ChooserReceive ChooserInput | Submit FourColors
 
 data ChooserOutput = TakeTurn FourColors
 data ChooserQuery a = SetActive Boolean a
@@ -262,14 +293,80 @@ chooser = H.mkComponent
             , four: Nothing
             }
 
-        render :: forall m. ChooserState -> H.ComponentHTML ChooserAction () m
-        render cs = HH.p_ [ HH.text  "Your chooser goes here." ]
 
         handleAction :: ChooserAction -> H.HalogenM ChooserState ChooserAction () ChooserOutput m Unit
         handleAction (SetPick c) = H.modify_ \state -> state { pick = Just c }
-        handleAction (SetOne c) = H.modify_ \state -> state { one = Just c }
-        handleAction (SetTwo c) = H.modify_ \state -> state { two = Just c }
-        handleAction (SetThree c) = H.modify_ \state -> state { three = Just c }
-        handleAction (SetFour c) = H.modify_ \state -> state { four = Just c }
+
+        handleAction SetOne   = H.modify_ \state -> state { one   = state.pick }
+        handleAction SetTwo   = H.modify_ \state -> state { two   = state.pick }
+        handleAction SetThree = H.modify_ \state -> state { three = state.pick }
+        handleAction SetFour  = H.modify_ \state -> state { four  = state.pick }
+
         handleAction (ChooserReceive input) = H.modify_ \state -> state { active = input.active }
         handleAction (Submit fc) = H.raise $ TakeTurn fc
+
+
+        render :: ChooserState -> H.ComponentHTML ChooserAction () m
+        render cs = HH.div [ HP.classes (chooserClasses cs.active) ]
+            [ HH.div_ $ [ renderPeg cs.one SetOne, renderPeg cs.two SetTwo, renderPeg cs.three SetThree, renderPeg cs.four SetFour]
+            , HH.div_ $ map (renderColor cs.pick) colors
+            , HH.div_ [ renderSubmit cs ]
+            ]
+
+        chooserClasses :: Boolean -> Array ClassName
+        chooserClasses active = [ ClassName "chooser", ClassName status ] where
+            status = if active then "active" else "inactive"
+
+        renderPeg :: Maybe Color -> ChooserAction -> H.ComponentHTML ChooserAction () m
+        renderPeg mc action =
+            SVG.svg
+                [ SVGAttr.height svgLarge
+                , SVGAttr.width svgLarge
+                ]
+                [ SVG.circle
+                    [ SVGAttr.r (svgLarge / 2.0 * svgRatio)
+                    , SVGAttr.cx (svgLarge / 2.0)
+                    , SVGAttr.cy (svgLarge / 2.0)
+                    , SVGAttr.classes $ pegClasses mc
+                    , HE.onClick (\_ -> action)
+                    ]
+                ]
+
+        pegClasses :: Maybe Color -> Array ClassName
+        pegClasses mc = [ ClassName "peg", ClassName $ fromMaybe "unselected" ( show <$> mc ) ]
+
+        {- renderColor :: Maybe Color -> Color -> H.ComponentHTML ChooserAction () m
+        renderColor pick c = HH.span [ HP.classes $ colorClasses pick c, HE.onClick (\_ -> SetPick c ) ]
+                                     [ HH.text colorSelector ]
+
+        -}
+
+        renderColor :: Maybe Color -> Color -> H.ComponentHTML ChooserAction () m
+        renderColor pick c =
+            SVG.svg
+                [ SVGAttr.height svgMedium
+                , SVGAttr.width svgMedium
+                ]
+                [ SVG.rect
+                    [ SVGAttr.classes $ colorClasses pick c
+                    , SVGAttr.height $ svgMedium * svgRatio - 5.0
+                    , SVGAttr.width $ svgMedium * svgRatio - 5.0
+                    , SVGAttr.x 2.5
+                    , SVGAttr.y 2.5
+                    , HE.onClick (\_ -> SetPick c  )
+                    ]
+                ]
+
+        colorClasses :: Maybe Color -> Color -> Array ClassName
+        colorClasses pick c = [ ClassName "color", ClassName $ show c, ClassName picked ] where
+          picked = if Just c == pick then "selected" else "unselected"
+
+        renderSubmit :: ChooserState -> H.ComponentHTML ChooserAction () m
+        renderSubmit cs = case FourColors <$> cs.one <*> cs.two <*> cs.three <*> cs.four of
+                Just fc -> renderSubmitButton cs.active fc
+                Nothing -> HH.text ""
+
+        renderSubmitButton :: Boolean -> FourColors -> H.ComponentHTML ChooserAction () m
+        renderSubmitButton active fc =
+            HH.button [ HP.disabled $ not active, HE.onClick (\_ -> Submit fc)]
+                      [ HH.text "Guess" ]

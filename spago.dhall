@@ -16,12 +16,15 @@ to generate this file without the comments in this block.
   , "console"
   , "effect"
   , "halogen"
+  , "halogen-svg-elems"
   , "lists"
   , "maybe"
   , "prelude"
   , "random"
+  , "strings"
   , "test-unit"
   , "tuples"
+  , "web-html"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

@@ -1,0 +1,38 @@
+.red {
+    color: red;
+    fill: red;
+}
+
+.orange {
+    color: orange;
+    fill: orange;
+}
+
+.yellow {
+    color: yellow;
+    fill: yellow;
+}
+
+.green {
+    color: green;
+    fill: green;
+}
+
+.blue {
+    color: blue;
+    fill: blue;
+}
+
+.purple {
+    color: purple;
+    fill: purple;
+}
+
+.peg.unselected {
+    fill: #ccc;
+}
+
+.color.selected {
+    stroke: #66d;
+    stroke-width: 5;
+}

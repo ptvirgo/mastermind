@@ -62,7 +62,6 @@ initialize = do
 takeTurn :: forall target. MasterMind target => target -> Board target -> Board target
 takeTurn newGuess board = board { turns = snoc board.turns $ { guess: newGuess, feedback: evalGuess board.target newGuess }}
 
-
 {- Helpers -}
 
 randomChoice :: forall a. a -> Array a -> Effect a
