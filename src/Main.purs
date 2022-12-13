@@ -161,7 +161,7 @@ game =
 
     render :: GameState -> H.ComponentHTML GameAction Slot m
     render gameState =
-        HH.div_
+        HH.div [ HP.id "game" ]
         [ HH.p_ [ HH.text $ gameMessage gameState ]
         , HH.slot_ _board 0 board Nothing
         , HH.slot _chooser 1 chooser { active: activeGame gameState } HandleChooser
@@ -216,7 +216,7 @@ board = H.mkComponent
         render Nothing = HH.p_ [ HH.text "Loading Board" ]
         render (Just b) =
             HH.div
-                [ HP.classes [ ClassName "board" ] ]
+                [ HP.id "board" ]
                 $ map renderTurn b.turns
 
         renderTurn :: forall w i. MM.Turn FourColors -> HH.HTML w i
@@ -309,7 +309,7 @@ chooser = H.mkComponent
 
 
         render :: ChooserState -> H.ComponentHTML ChooserAction () m
-        render cs = HH.div [ HP.classes (chooserClasses cs.active) ]
+        render cs = HH.div [ HP.classes (chooserClasses cs.active), HP.id "chooser" ]
             [ HH.div_ $ [ renderPeg cs.one SetOne, renderPeg cs.two SetTwo, renderPeg cs.three SetThree, renderPeg cs.four SetFour]
             , HH.div_ $ map (renderColor cs.pick) colors
             , HH.div_ [ renderSubmit cs ]
