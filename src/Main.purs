@@ -39,6 +39,7 @@ main = HAff.runHalogenAff do
 
 {- Constants -}
 
+{- svgLarge ... svgSmall are pixel sizes used by the generated svg visual elements. -}
 svgLarge :: Number
 svgLarge = 60.0
 
@@ -51,8 +52,13 @@ svgSmall = 30.0
 svgRatio :: Number
 svgRatio = 0.9
 
+{- gameLength is how many guesses the player is allowed to make before the game ends -}
+gameLength :: Int
+gameLength = 10
+
 {- Data Definitions -}
 
+{- Color represents one of the guessable colors -}
 data Color = Red | Orange | Yellow | Green | Blue | Purple 
 
 derive instance eqColor :: Eq Color
@@ -75,15 +81,18 @@ derive instance eqFourColors :: Eq FourColors
 instance showFourColors :: Show FourColors where
     show (FourColors one two three four) = "FourColors " <> show one <> " " <> show two <> " " <> show three <> " " <> show four
 
+{- Convert a FourColor instance into a list, for cases when mapping or folding might be handy -}
 fcList :: FourColors -> List Color
 fcList (FourColors a b c d) = a : b : c : d : Nil
 
+{- Compare a FourColor target and guess, providing FeedBack to indicate how many guesses are correct -}
 getCorrect :: FourColors -> FourColors -> List MM.FeedBack
 getCorrect target guess =
           map (\_ -> MM.Correct)
           <<< filter (uncurry (==))
           $ zip (fcList target) (fcList guess)
 
+{- Compore a FourColor target and guess, providing FeedBack to indicate how many guesses were the right color but in the wrong position -}
 getPartial :: FourColors -> FourColors -> List MM.FeedBack
 getPartial target guess = looper (map fst candidates) (map snd candidates) where
     candidates = filter (uncurry (/=)) $ zip (fcList target) (fcList guess)
@@ -106,62 +115,19 @@ instance masterMindFourColors :: MM.MasterMind FourColors where
 
     evalGuess target guess = Array.fromFoldable $ getCorrect target guess <> getPartial target guess
 
-colorPeg :: String
-colorPeg = " 0 "
-
-colorSelector :: String
-colorSelector = " A "
-
-feedbackPeg :: String
-feedbackPeg = " F "
-
-{- Four Colors Game in Halogen
-    - html character codes
-        - "⬤ ⬛ ⯁
-        - "black large circle" - &#11044; 
-        - "black large square" - &#11035;
-        - "black diamond centred" - &#11201;
-
-    - parent
-        - states
-            - uninitialized (menu?)
-            - playing int (turn count)
-            - won
-            - lost
-
-        - actions
-            - begin
-            - take turn
-
-    - choose component
-        - state (record)
-            - active :: boolean
-            - pick :: Maybe Color
-            - one :: Maybe Color
-            - two :: Maybe Color
-            - three :: Maybe Color
-            - four :: Maybe Color
-
-        - input (parent sends per render)
-            - active boolean (should the component keep doing input? a won / lost game could simply not render a selector, but this is partly a practice)
-        - internal actions
-            - choose color
-            - apply color to position
-        - output (child alerts parent)
-            - new guess
- fog869vat84type   
--}
+{- Four Colors Game in Halogen -}
 
 type Slot =
     ( board :: H.Slot BoardQuery Void Int
     , chooser :: H.Slot ChooserQuery ChooserOutput Int
     )           
 
+{- `game` is the primary (parent) component.  It tracks turns, handles inter-modal coordination, and provides in-progress / win / lose states -}
+
+{- Gameplay Int shows number of turns taken. GameOver Boolean shows end-game status. Eg. a game that has been lost would be GameOver false. After 2 guesses: Gameplay 2 -}
+
 data GameState = GamePlay Int | GameOver Boolean
 data GameAction = HandleChooser ChooserOutput
-
-gameLength :: Int
-gameLength = 10
 
 game :: forall query input output m. MonadEffect m => H.Component query input output m
 game =
@@ -209,7 +175,7 @@ game =
     activeGame (GamePlay _) = true
     activeGame _ = false
 
-{- Board Component -}
+{- `board` component displays prevously taken turns, including feedback. It does not produce outpput, but a query to add & evaluate a new turn will return a boolean indicating whether the turn was a game-winning guess -}
 
 _board = Proxy :: Proxy "board"
 
@@ -288,7 +254,7 @@ board = H.mkComponent
                     ]
                 ]
 
-{- Selector Component -}
+{- `chooser` Component allows the player to prepare and submit guesses.  Handles player color selections internally, but passes submitted guesses to the parent element via ChooserOutput. -}
 
 _chooser = Proxy :: Proxy "chooser"
 
