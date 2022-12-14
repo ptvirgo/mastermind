@@ -1,3 +1,68 @@
+/* palette
+ * cordovan: 984447
+ * uranian: ADD9F4
+ * queen: 476C9B
+ * apricot: FFD6BA
+ * black: 101419
+ */
+
+html {
+    background-color: #ADD9F4;
+    color: #101419;
+    font-size: 16pt;
+}
+
+a {
+    color: #984447;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #FFD6BA;
+}
+
+h1, p, div {
+    margin: 0 0 1em 0;
+}
+
+div#game {
+    max-width: 300px;
+    margin: 2em auto;
+}
+
+div#board, div#chooser { 
+    padding: 1em 2ex;
+}
+
+div#gameMessage p, div#board p, div#board div, div#chooser div {
+    margin: 0;
+    padding: 0;
+}
+
+
+div#gameMessage {
+    padding: 0.25em 2ex;
+    text-align: center;
+}
+
+div#chooser {
+    text-align: center;
+}
+
+div#board, div#chooser, div#gameMessage {
+    border-radius: 5px;
+    background-color: #476C9B;
+    color: #FFD6BA;
+    margin: 0 auto 1em auto;
+}
+
+div.turn {
+    display: flex;
+    flex-direction: row;
+    column-gap: 2ex;
+}
+
 .red {
     color: red;
     fill: red;
@@ -33,7 +98,7 @@
 }
 
 .color.selected {
-    stroke: #66d;
+    stroke: #FFD6BA;
     stroke-width: 5;
 }
 

@@ -127,7 +127,7 @@ type Slot =
 {- Gameplay Int shows number of turns taken. GameOver Boolean shows end-game status. Eg. a game that has been lost would be GameOver false. After 2 guesses: Gameplay 2 -}
 
 data GameState = GamePlay Int | GameOver Boolean
-data GameAction = HandleChooser ChooserOutput
+data GameAction = HandleChooser ChooserOutput | NewGame
 
 game :: forall query input output m. MonadEffect m => H.Component query input output m
 game =
@@ -149,6 +149,9 @@ game =
         case ev of
             Just turnWon -> H.modify_ $ handleTurn turnWon
             Nothing -> pure unit
+    handleAction NewGame = do
+       H.tell _board 0 Restart
+       H.modify_ $ \_ -> GamePlay 0
 
     handleTurn :: Boolean -> GameState -> GameState
     handleTurn true _ = GameOver true
@@ -162,14 +165,21 @@ game =
     render :: GameState -> H.ComponentHTML GameAction Slot m
     render gameState =
         HH.div [ HP.id "game" ]
-        [ HH.p_ [ HH.text $ gameMessage gameState ]
+        [ gameMessage gameState
         , HH.slot_ _board 0 board Nothing
         , HH.slot _chooser 1 chooser { active: activeGame gameState } HandleChooser
         ]
 
-    gameMessage :: GameState -> String
-    gameMessage (GamePlay turns) = "Turns Taken: " <> show turns
-    gameMessage (GameOver won) = "You have " <> if won then "won" else "lost" <> " the game."
+    gameMessage :: GameState -> H.ComponentHTML GameAction Slot m
+    gameMessage state = HH.div [ HP.id "gameMessage" ]
+        case state of
+            (GamePlay turns) -> [ HH.p_ [ HH.text $ "Turns taken: " <> show turns <> " of " <> show gameLength ] ]
+            (GameOver won) ->
+                [ HH.p_
+                    [ HH.text $ "You " <> (if won then "won" else "lost") <> " the game. "
+                    , HH.button [ HP.id "restart", HE.onClick (\_ -> NewGame ) ] [ HH.text "Restart" ]
+                    ]
+                ]
 
     activeGame :: GameState -> Boolean
     activeGame (GamePlay _) = true
@@ -183,7 +193,7 @@ type BoardState = Maybe (MM.Board FourColors)
     {- Randomly generating the target is an effect. Therefore the initial state has to be `Nothing` and the mkComponent step must trigger `InitializeBoard`. -}
 
 data BoardAction = InitializeBoard
-data BoardQuery a = EvalTurn FourColors (Boolean -> a)
+data BoardQuery a = EvalTurn FourColors (Boolean -> a) | Restart a
 
 
 board :: forall input output m. MonadEffect m => H.Component BoardQuery input output m
@@ -212,7 +222,12 @@ board = H.mkComponent
             newState <- H.get
             pure $ (reply <<< (\b -> b.target == guess)) <$> newState
 
-        render :: forall m. BoardState -> H.ComponentHTML BoardAction () m
+        handleQuery (Restart a) = do
+            b <- H.liftEffect MM.initialize
+            H.modify_ \_ -> Just b
+            pure $ Just a
+
+        render :: BoardState -> H.ComponentHTML BoardAction () m
         render Nothing = HH.p_ [ HH.text "Loading Board" ]
         render (Just b) =
             HH.div
@@ -223,8 +238,10 @@ board = H.mkComponent
         renderTurn t =
             HH.div
                 [ HP.classes [ ClassName "turn" ]]
-                [ HH.span_ $ Array.fromFoldable $ map renderPeg (fcList t.guess)
-                , HH.span_ $ Array.fromFoldable $ map renderFeedBack t.feedback
+                [ HH.div [ HP.classes [ ClassName "guess" ]]
+                         $ Array.fromFoldable $ map renderPeg (fcList t.guess)
+                , HH.div [ HP.classes [ ClassName "feedback" ]]
+                         $ Array.fromFoldable $ map renderFeedBack t.feedback
                 ]
 
         renderPeg :: forall w i. Color -> HH.HTML w i
@@ -294,7 +311,6 @@ chooser = H.mkComponent
             , three: Nothing
             , four: Nothing
             }
-
 
         handleAction :: ChooserAction -> H.HalogenM ChooserState ChooserAction () ChooserOutput m Unit
         handleAction (SetPick c) = H.modify_ \state -> state { pick = Just c }
