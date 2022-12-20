@@ -96,7 +96,7 @@ instance masterMindFourColors :: MM.MasterMind FourColors where
 {- Four Colors Game in Halogen -}
 type Slot
   = ( board :: H.Slot BoardQuery Void Int
-    , chooser :: H.Slot ChooserQuery ChooserOutput Int
+    , chooser :: forall query. H.Slot query ChooserOutput Int
     )
 
 {- `game` is the primary (parent) component.  It tracks turns, handles inter-modal coordination, and provides in-progress / win / lose states -}
@@ -288,9 +288,6 @@ data ChooserAction
 
 data ChooserOutput
   = TakeTurn FourColors
-
-data ChooserQuery a
-  = SetActive Boolean a
 
 chooser :: forall query m. H.Component query ChooserInput ChooserOutput m
 chooser =
