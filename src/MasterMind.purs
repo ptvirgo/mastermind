@@ -68,7 +68,7 @@ takeTurn newGuess board = board { turns = snoc board.turns $ { guess: newGuess, 
 {- Helpers -}
 randomChoice :: forall a. a -> Array a -> Effect a
 randomChoice defaultChoice choices = do
-  selected <- randomInt 0 (length choices)
+  selected <- randomInt 0 (length choices - 1)
   case choices !! selected of
     Just c -> pure c
     Nothing -> pure defaultChoice
