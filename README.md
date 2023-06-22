@@ -2,7 +2,7 @@
 
 This is a Purescript implementation of the classic **Mastermind** game.  There's a generic Mastermind library separate from the standard four-colors game, so the library could be used to implement many different guessing game variations (Wordle being a popular example.)
 
-- [Online Demo](https://www.pablovirgo.com/mastermind")
+- [Online Demo](https://www.pablovirgo.com/mastermind)
 
 ## Build
 
