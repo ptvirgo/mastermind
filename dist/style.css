@@ -1,9 +1,9 @@
 :root {
-    --base: #D1CCDC;
-    --text: #424C55;
-    --link: #3D2C2E;
-    --link-hover: #886F68;
-    --board: #F5EDF0;
+    --base: #F2F7F2;
+    --text: #2D2D2A;
+    --link: #95818D;
+    --link-hover: #4CB944;
+    --board: #2D93AD;
 }
 
 html {
