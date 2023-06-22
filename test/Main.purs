@@ -2,8 +2,6 @@ module Test.Main where
 
 import Prelude
 import Effect (Effect)
-import Effect.Class (liftEffect)
-import Effect.Class.Console (log)
 
 import Test.Unit (suite, test, TestSuite)
 import Test.Unit.Main (runTest)
@@ -13,7 +11,6 @@ import Test.QuickCheck as QC
 import MasterMind
 
 import FourColors.Core
-import Main
 
 {-
 testScale :: TestSuite
