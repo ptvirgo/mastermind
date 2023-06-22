@@ -14,11 +14,11 @@ Then get your browser to `dist/index.html`, by whatever server you can.
 
 This is probably most useful as one example of how a Purescript/Halogen app can be organized.
 
-    - There's a generic Mastermind module that establishes type classes and default logic for a Mastermind game.
-    - There's a FourColors library that includes:
-        1. A distinct core module with base types and class definitions.
-        2. Separate component modules for the major feautures of a board.
-        3. A single Game module & component that puts the sub compoenents together.
+- There's a generic Mastermind module that establishes type classes and default logic for a Mastermind game.
+- There's a FourColors library that includes:
+    1. A distinct core module with base types and class definitions.
+    2. Separate component modules for the major feautures of a board.
+    3. A single Game module & component that puts the sub compoenents together.
 
 I could imagine the `FourColors.Game` module being renamed to `FourColors.Main`.  Purescript is relatively obscure, so there are probably conventions I'm unaware of, but this should be a good example of how code can be organized into reusable and modular parts.
 

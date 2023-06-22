@@ -170,6 +170,345 @@
     }
   };
 
+  // output/Data.Semigroup/foreign.js
+  var concatArray = function(xs) {
+    return function(ys) {
+      if (xs.length === 0)
+        return ys;
+      if (ys.length === 0)
+        return xs;
+      return xs.concat(ys);
+    };
+  };
+
+  // output/Data.Symbol/index.js
+  var reflectSymbol = function(dict) {
+    return dict.reflectSymbol;
+  };
+
+  // output/Data.Semigroup/index.js
+  var semigroupArray = {
+    append: concatArray
+  };
+  var append = function(dict) {
+    return dict.append;
+  };
+
+  // output/Data.Bounded/foreign.js
+  var topInt = 2147483647;
+  var bottomInt = -2147483648;
+  var topChar = String.fromCharCode(65535);
+  var bottomChar = String.fromCharCode(0);
+  var topNumber = Number.POSITIVE_INFINITY;
+  var bottomNumber = Number.NEGATIVE_INFINITY;
+
+  // output/Data.Ord/foreign.js
+  var unsafeCompareImpl = function(lt) {
+    return function(eq6) {
+      return function(gt) {
+        return function(x2) {
+          return function(y2) {
+            return x2 < y2 ? lt : x2 === y2 ? eq6 : gt;
+          };
+        };
+      };
+    };
+  };
+  var ordIntImpl = unsafeCompareImpl;
+  var ordStringImpl = unsafeCompareImpl;
+
+  // output/Data.Eq/foreign.js
+  var refEq = function(r1) {
+    return function(r2) {
+      return r1 === r2;
+    };
+  };
+  var eqBooleanImpl = refEq;
+  var eqIntImpl = refEq;
+  var eqStringImpl = refEq;
+
+  // output/Data.Eq/index.js
+  var eqString = {
+    eq: eqStringImpl
+  };
+  var eqInt = {
+    eq: eqIntImpl
+  };
+  var eqBoolean = {
+    eq: eqBooleanImpl
+  };
+  var eq = function(dict) {
+    return dict.eq;
+  };
+  var eq2 = /* @__PURE__ */ eq(eqBoolean);
+  var notEq = function(dictEq) {
+    var eq32 = eq(dictEq);
+    return function(x2) {
+      return function(y2) {
+        return eq2(eq32(x2)(y2))(false);
+      };
+    };
+  };
+
+  // output/Data.Ordering/index.js
+  var LT = /* @__PURE__ */ function() {
+    function LT2() {
+    }
+    ;
+    LT2.value = new LT2();
+    return LT2;
+  }();
+  var GT = /* @__PURE__ */ function() {
+    function GT2() {
+    }
+    ;
+    GT2.value = new GT2();
+    return GT2;
+  }();
+  var EQ = /* @__PURE__ */ function() {
+    function EQ2() {
+    }
+    ;
+    EQ2.value = new EQ2();
+    return EQ2;
+  }();
+
+  // output/Data.Ring/foreign.js
+  var intSub = function(x2) {
+    return function(y2) {
+      return x2 - y2 | 0;
+    };
+  };
+
+  // output/Data.Semiring/foreign.js
+  var intAdd = function(x2) {
+    return function(y2) {
+      return x2 + y2 | 0;
+    };
+  };
+  var intMul = function(x2) {
+    return function(y2) {
+      return x2 * y2 | 0;
+    };
+  };
+  var numAdd = function(n1) {
+    return function(n2) {
+      return n1 + n2;
+    };
+  };
+  var numMul = function(n1) {
+    return function(n2) {
+      return n1 * n2;
+    };
+  };
+
+  // output/Data.Semiring/index.js
+  var semiringNumber = {
+    add: numAdd,
+    zero: 0,
+    mul: numMul,
+    one: 1
+  };
+  var semiringInt = {
+    add: intAdd,
+    zero: 0,
+    mul: intMul,
+    one: 1
+  };
+  var mul = function(dict) {
+    return dict.mul;
+  };
+  var add = function(dict) {
+    return dict.add;
+  };
+
+  // output/Data.Ring/index.js
+  var ringInt = {
+    sub: intSub,
+    Semiring0: function() {
+      return semiringInt;
+    }
+  };
+
+  // output/Data.Ord/index.js
+  var ordString = /* @__PURE__ */ function() {
+    return {
+      compare: ordStringImpl(LT.value)(EQ.value)(GT.value),
+      Eq0: function() {
+        return eqString;
+      }
+    };
+  }();
+  var ordInt = /* @__PURE__ */ function() {
+    return {
+      compare: ordIntImpl(LT.value)(EQ.value)(GT.value),
+      Eq0: function() {
+        return eqInt;
+      }
+    };
+  }();
+  var compare = function(dict) {
+    return dict.compare;
+  };
+
+  // output/Data.Bounded/index.js
+  var top = function(dict) {
+    return dict.top;
+  };
+  var boundedInt = {
+    top: topInt,
+    bottom: bottomInt,
+    Ord0: function() {
+      return ordInt;
+    }
+  };
+  var bottom = function(dict) {
+    return dict.bottom;
+  };
+
+  // output/Data.Show/foreign.js
+  var showIntImpl = function(n) {
+    return n.toString();
+  };
+  var showNumberImpl = function(n) {
+    var str = n.toString();
+    return isNaN(str + ".0") ? str : str + ".0";
+  };
+
+  // output/Data.Show/index.js
+  var showNumber = {
+    show: showNumberImpl
+  };
+  var showInt = {
+    show: showIntImpl
+  };
+  var show = function(dict) {
+    return dict.show;
+  };
+
+  // output/Data.Maybe/index.js
+  var identity3 = /* @__PURE__ */ identity(categoryFn);
+  var Nothing = /* @__PURE__ */ function() {
+    function Nothing2() {
+    }
+    ;
+    Nothing2.value = new Nothing2();
+    return Nothing2;
+  }();
+  var Just = /* @__PURE__ */ function() {
+    function Just2(value0) {
+      this.value0 = value0;
+    }
+    ;
+    Just2.create = function(value0) {
+      return new Just2(value0);
+    };
+    return Just2;
+  }();
+  var maybe = function(v2) {
+    return function(v1) {
+      return function(v22) {
+        if (v22 instanceof Nothing) {
+          return v2;
+        }
+        ;
+        if (v22 instanceof Just) {
+          return v1(v22.value0);
+        }
+        ;
+        throw new Error("Failed pattern match at Data.Maybe (line 237, column 1 - line 237, column 51): " + [v2.constructor.name, v1.constructor.name, v22.constructor.name]);
+      };
+    };
+  };
+  var isNothing = /* @__PURE__ */ maybe(true)(/* @__PURE__ */ $$const(false));
+  var isJust = /* @__PURE__ */ maybe(false)(/* @__PURE__ */ $$const(true));
+  var functorMaybe = {
+    map: function(v2) {
+      return function(v1) {
+        if (v1 instanceof Just) {
+          return new Just(v2(v1.value0));
+        }
+        ;
+        return Nothing.value;
+      };
+    }
+  };
+  var map2 = /* @__PURE__ */ map(functorMaybe);
+  var fromMaybe = function(a3) {
+    return maybe(a3)(identity3);
+  };
+  var fromJust = function() {
+    return function(v2) {
+      if (v2 instanceof Just) {
+        return v2.value0;
+      }
+      ;
+      throw new Error("Failed pattern match at Data.Maybe (line 288, column 1 - line 288, column 46): " + [v2.constructor.name]);
+    };
+  };
+  var eqMaybe = function(dictEq) {
+    var eq6 = eq(dictEq);
+    return {
+      eq: function(x2) {
+        return function(y2) {
+          if (x2 instanceof Nothing && y2 instanceof Nothing) {
+            return true;
+          }
+          ;
+          if (x2 instanceof Just && y2 instanceof Just) {
+            return eq6(x2.value0)(y2.value0);
+          }
+          ;
+          return false;
+        };
+      }
+    };
+  };
+  var applyMaybe = {
+    apply: function(v2) {
+      return function(v1) {
+        if (v2 instanceof Just) {
+          return map2(v2.value0)(v1);
+        }
+        ;
+        if (v2 instanceof Nothing) {
+          return Nothing.value;
+        }
+        ;
+        throw new Error("Failed pattern match at Data.Maybe (line 67, column 1 - line 69, column 30): " + [v2.constructor.name, v1.constructor.name]);
+      };
+    },
+    Functor0: function() {
+      return functorMaybe;
+    }
+  };
+  var bindMaybe = {
+    bind: function(v2) {
+      return function(v1) {
+        if (v2 instanceof Just) {
+          return v1(v2.value0);
+        }
+        ;
+        if (v2 instanceof Nothing) {
+          return Nothing.value;
+        }
+        ;
+        throw new Error("Failed pattern match at Data.Maybe (line 125, column 1 - line 127, column 28): " + [v2.constructor.name, v1.constructor.name]);
+      };
+    },
+    Apply0: function() {
+      return applyMaybe;
+    }
+  };
+  var applicativeMaybe = /* @__PURE__ */ function() {
+    return {
+      pure: Just.create,
+      Apply0: function() {
+        return applyMaybe;
+      }
+    };
+  }();
+
   // output/Effect.Aff/foreign.js
   var Aff = function() {
     var EMPTY = {};
@@ -1076,368 +1415,29 @@
 
   // output/Control.Monad/index.js
   var unlessM = function(dictMonad) {
-    var bind7 = bind(dictMonad.Bind1());
+    var bind8 = bind(dictMonad.Bind1());
     var unless2 = unless(dictMonad.Applicative0());
     return function(mb) {
       return function(m2) {
-        return bind7(mb)(function(b2) {
+        return bind8(mb)(function(b2) {
           return unless2(b2)(m2);
         });
       };
     };
   };
   var ap = function(dictMonad) {
-    var bind7 = bind(dictMonad.Bind1());
+    var bind8 = bind(dictMonad.Bind1());
     var pure14 = pure(dictMonad.Applicative0());
     return function(f) {
       return function(a3) {
-        return bind7(f)(function(f$prime) {
-          return bind7(a3)(function(a$prime) {
+        return bind8(f)(function(f$prime) {
+          return bind8(a3)(function(a$prime) {
             return pure14(f$prime(a$prime));
           });
         });
       };
     };
   };
-
-  // output/Data.Semigroup/foreign.js
-  var concatArray = function(xs) {
-    return function(ys) {
-      if (xs.length === 0)
-        return ys;
-      if (ys.length === 0)
-        return xs;
-      return xs.concat(ys);
-    };
-  };
-
-  // output/Data.Symbol/index.js
-  var reflectSymbol = function(dict) {
-    return dict.reflectSymbol;
-  };
-
-  // output/Data.Semigroup/index.js
-  var semigroupArray = {
-    append: concatArray
-  };
-  var append = function(dict) {
-    return dict.append;
-  };
-
-  // output/Data.Bounded/foreign.js
-  var topInt = 2147483647;
-  var bottomInt = -2147483648;
-  var topChar = String.fromCharCode(65535);
-  var bottomChar = String.fromCharCode(0);
-  var topNumber = Number.POSITIVE_INFINITY;
-  var bottomNumber = Number.NEGATIVE_INFINITY;
-
-  // output/Data.Ord/foreign.js
-  var unsafeCompareImpl = function(lt) {
-    return function(eq6) {
-      return function(gt) {
-        return function(x2) {
-          return function(y2) {
-            return x2 < y2 ? lt : x2 === y2 ? eq6 : gt;
-          };
-        };
-      };
-    };
-  };
-  var ordIntImpl = unsafeCompareImpl;
-  var ordStringImpl = unsafeCompareImpl;
-
-  // output/Data.Eq/foreign.js
-  var refEq = function(r1) {
-    return function(r2) {
-      return r1 === r2;
-    };
-  };
-  var eqBooleanImpl = refEq;
-  var eqIntImpl = refEq;
-  var eqStringImpl = refEq;
-
-  // output/Data.Eq/index.js
-  var eqString = {
-    eq: eqStringImpl
-  };
-  var eqInt = {
-    eq: eqIntImpl
-  };
-  var eqBoolean = {
-    eq: eqBooleanImpl
-  };
-  var eq = function(dict) {
-    return dict.eq;
-  };
-  var eq2 = /* @__PURE__ */ eq(eqBoolean);
-  var notEq = function(dictEq) {
-    var eq32 = eq(dictEq);
-    return function(x2) {
-      return function(y2) {
-        return eq2(eq32(x2)(y2))(false);
-      };
-    };
-  };
-
-  // output/Data.Ordering/index.js
-  var LT = /* @__PURE__ */ function() {
-    function LT2() {
-    }
-    ;
-    LT2.value = new LT2();
-    return LT2;
-  }();
-  var GT = /* @__PURE__ */ function() {
-    function GT2() {
-    }
-    ;
-    GT2.value = new GT2();
-    return GT2;
-  }();
-  var EQ = /* @__PURE__ */ function() {
-    function EQ2() {
-    }
-    ;
-    EQ2.value = new EQ2();
-    return EQ2;
-  }();
-
-  // output/Data.Ring/foreign.js
-  var intSub = function(x2) {
-    return function(y2) {
-      return x2 - y2 | 0;
-    };
-  };
-
-  // output/Data.Semiring/foreign.js
-  var intAdd = function(x2) {
-    return function(y2) {
-      return x2 + y2 | 0;
-    };
-  };
-  var intMul = function(x2) {
-    return function(y2) {
-      return x2 * y2 | 0;
-    };
-  };
-  var numAdd = function(n1) {
-    return function(n2) {
-      return n1 + n2;
-    };
-  };
-  var numMul = function(n1) {
-    return function(n2) {
-      return n1 * n2;
-    };
-  };
-
-  // output/Data.Semiring/index.js
-  var semiringNumber = {
-    add: numAdd,
-    zero: 0,
-    mul: numMul,
-    one: 1
-  };
-  var semiringInt = {
-    add: intAdd,
-    zero: 0,
-    mul: intMul,
-    one: 1
-  };
-  var mul = function(dict) {
-    return dict.mul;
-  };
-  var add = function(dict) {
-    return dict.add;
-  };
-
-  // output/Data.Ring/index.js
-  var ringInt = {
-    sub: intSub,
-    Semiring0: function() {
-      return semiringInt;
-    }
-  };
-
-  // output/Data.Ord/index.js
-  var ordString = /* @__PURE__ */ function() {
-    return {
-      compare: ordStringImpl(LT.value)(EQ.value)(GT.value),
-      Eq0: function() {
-        return eqString;
-      }
-    };
-  }();
-  var ordInt = /* @__PURE__ */ function() {
-    return {
-      compare: ordIntImpl(LT.value)(EQ.value)(GT.value),
-      Eq0: function() {
-        return eqInt;
-      }
-    };
-  }();
-  var compare = function(dict) {
-    return dict.compare;
-  };
-
-  // output/Data.Bounded/index.js
-  var top = function(dict) {
-    return dict.top;
-  };
-  var boundedInt = {
-    top: topInt,
-    bottom: bottomInt,
-    Ord0: function() {
-      return ordInt;
-    }
-  };
-  var bottom = function(dict) {
-    return dict.bottom;
-  };
-
-  // output/Data.Show/foreign.js
-  var showIntImpl = function(n) {
-    return n.toString();
-  };
-  var showNumberImpl = function(n) {
-    var str = n.toString();
-    return isNaN(str + ".0") ? str : str + ".0";
-  };
-
-  // output/Data.Show/index.js
-  var showNumber = {
-    show: showNumberImpl
-  };
-  var showInt = {
-    show: showIntImpl
-  };
-  var show = function(dict) {
-    return dict.show;
-  };
-
-  // output/Data.Maybe/index.js
-  var identity3 = /* @__PURE__ */ identity(categoryFn);
-  var Nothing = /* @__PURE__ */ function() {
-    function Nothing2() {
-    }
-    ;
-    Nothing2.value = new Nothing2();
-    return Nothing2;
-  }();
-  var Just = /* @__PURE__ */ function() {
-    function Just2(value0) {
-      this.value0 = value0;
-    }
-    ;
-    Just2.create = function(value0) {
-      return new Just2(value0);
-    };
-    return Just2;
-  }();
-  var maybe = function(v2) {
-    return function(v1) {
-      return function(v22) {
-        if (v22 instanceof Nothing) {
-          return v2;
-        }
-        ;
-        if (v22 instanceof Just) {
-          return v1(v22.value0);
-        }
-        ;
-        throw new Error("Failed pattern match at Data.Maybe (line 237, column 1 - line 237, column 51): " + [v2.constructor.name, v1.constructor.name, v22.constructor.name]);
-      };
-    };
-  };
-  var isNothing = /* @__PURE__ */ maybe(true)(/* @__PURE__ */ $$const(false));
-  var isJust = /* @__PURE__ */ maybe(false)(/* @__PURE__ */ $$const(true));
-  var functorMaybe = {
-    map: function(v2) {
-      return function(v1) {
-        if (v1 instanceof Just) {
-          return new Just(v2(v1.value0));
-        }
-        ;
-        return Nothing.value;
-      };
-    }
-  };
-  var map2 = /* @__PURE__ */ map(functorMaybe);
-  var fromMaybe = function(a3) {
-    return maybe(a3)(identity3);
-  };
-  var fromJust = function() {
-    return function(v2) {
-      if (v2 instanceof Just) {
-        return v2.value0;
-      }
-      ;
-      throw new Error("Failed pattern match at Data.Maybe (line 288, column 1 - line 288, column 46): " + [v2.constructor.name]);
-    };
-  };
-  var eqMaybe = function(dictEq) {
-    var eq6 = eq(dictEq);
-    return {
-      eq: function(x2) {
-        return function(y2) {
-          if (x2 instanceof Nothing && y2 instanceof Nothing) {
-            return true;
-          }
-          ;
-          if (x2 instanceof Just && y2 instanceof Just) {
-            return eq6(x2.value0)(y2.value0);
-          }
-          ;
-          return false;
-        };
-      }
-    };
-  };
-  var applyMaybe = {
-    apply: function(v2) {
-      return function(v1) {
-        if (v2 instanceof Just) {
-          return map2(v2.value0)(v1);
-        }
-        ;
-        if (v2 instanceof Nothing) {
-          return Nothing.value;
-        }
-        ;
-        throw new Error("Failed pattern match at Data.Maybe (line 67, column 1 - line 69, column 30): " + [v2.constructor.name, v1.constructor.name]);
-      };
-    },
-    Functor0: function() {
-      return functorMaybe;
-    }
-  };
-  var bindMaybe = {
-    bind: function(v2) {
-      return function(v1) {
-        if (v2 instanceof Just) {
-          return v1(v2.value0);
-        }
-        ;
-        if (v2 instanceof Nothing) {
-          return Nothing.value;
-        }
-        ;
-        throw new Error("Failed pattern match at Data.Maybe (line 125, column 1 - line 127, column 28): " + [v2.constructor.name, v1.constructor.name]);
-      };
-    },
-    Apply0: function() {
-      return applyMaybe;
-    }
-  };
-  var applicativeMaybe = /* @__PURE__ */ function() {
-    return {
-      pure: Just.create,
-      Apply0: function() {
-        return applyMaybe;
-      }
-    };
-  }();
 
   // output/Data.Either/index.js
   var Left = /* @__PURE__ */ function() {
@@ -3287,12 +3287,12 @@
     };
   };
   var bindStateT = function(dictMonad) {
-    var bind7 = bind(dictMonad.Bind1());
+    var bind8 = bind(dictMonad.Bind1());
     return {
       bind: function(v2) {
         return function(f) {
           return function(s2) {
-            return bind7(v2(s2))(function(v1) {
+            return bind8(v2(s2))(function(v1) {
               var v3 = f(v1.value0);
               return v3(v1.value1);
             });
@@ -8728,9 +8728,20 @@
   };
 
   // output/Main/index.js
+  var bind7 = /* @__PURE__ */ bind(bindAff);
   var component4 = /* @__PURE__ */ component3(monadEffectAff);
-  var main2 = /* @__PURE__ */ runHalogenAff(/* @__PURE__ */ bind(bindAff)(awaitBody)(function(body2) {
-    return runUI2(component4)(unit)(body2);
+  var main2 = /* @__PURE__ */ runHalogenAff(/* @__PURE__ */ bind7(awaitBody)(function(body2) {
+    return bind7(selectElement("div#app"))(function(appElement) {
+      if (appElement instanceof Just) {
+        return runUI2(component4)(unit)(appElement.value0);
+      }
+      ;
+      if (appElement instanceof Nothing) {
+        return runUI2(component4)(unit)(body2);
+      }
+      ;
+      throw new Error("Failed pattern match at Main (line 21, column 5 - line 23, column 50): " + [appElement.constructor.name]);
+    });
   }));
 
   // <stdin>
