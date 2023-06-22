@@ -4,9 +4,12 @@ import Prelude
 import Effect (Effect)
 import Effect.Class (liftEffect)
 import Effect.Class.Console (log)
+
 import Test.Unit (suite, test, TestSuite)
 import Test.Unit.Main (runTest)
 import Test.Unit.Assert as Assert
+import Test.QuickCheck as QC
+
 import MasterMind
 import Main
 
@@ -64,11 +67,6 @@ testMain =
       Assert.equal
         [ Correct, Correct, Correct, Correct ]
         $ evalGuess (FourColors Red Red Red Red) (FourColors Red Red Red Red)
-    test "evalGuess correct" do
-      testColors :: FourColors <- liftEffect generateTarget
-      Assert.equal
-        [ Correct, Correct, Correct, Correct ]
-        $ evalGuess testColors testColors
     test "evalGuess partial" do
       Assert.equal
         [ Correct, Correct, Partial ] {- the mastermind board handles sorting to avoid leaking clues -}
@@ -86,8 +84,12 @@ testMain =
         [ Correct, Partial ]
         $ evalGuess (FourColors Red Blue Red Blue) (FourColors Green Blue Blue Purple)
 
+propFourEqual :: FourColors -> Boolean
+propFourEqual fc = [ Correct, Correct, Correct, Correct ] == evalGuess fc fc
+
 main :: Effect Unit
-main =
+main = do
   runTest do
     testMasterMind
     testMain
+  QC.quickCheck' 3 propFourEqual
