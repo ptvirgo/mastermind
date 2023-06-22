@@ -9,28 +9,8 @@ import Test.Unit.Assert as Assert
 import Test.QuickCheck as QC
 
 import MasterMind
+import FourColors.Core (Color(..), FourColors(..))
 
-import FourColors.Core
-
-{-
-testScale :: TestSuite
-testScale =
-  suite "fitSizeToScale" do
-    test "fitSizeToScale handles increases" do
-      Assert.equal
-        ( Scale 2.0 2.0)
-        ( fitSizeToScale ({ height : 200, width : 100 }) ({ height : 50, width : 50 } ))
-      Assert.equal
-        ( Scale 4.0 4.0)
-        ( fitSizeToScale ({ height : 100, width : 200 }) ({ height : 25, width : 25 } ))
-    test "fitSizeToScale handles descreases" do
-      Assert.equal
-        ( Scale 0.5 0.5 )
-        ( fitSizeToScale ({ height : 50, width : 75 }) ({ height : 100, width : 100 } ))
-      Assert.equal
-        ( Scale 0.5 0.5 )
-        ( fitSizeToScale ({ height : 100, width : 150 }) ({ height : 200, width : 200 }))
--}
 testMasterMind :: TestSuite
 testMasterMind =
   suite "MasterMind" do
