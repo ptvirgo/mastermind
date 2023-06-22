@@ -1,4 +1,4 @@
-module Main where
+module Mastermind.Main where
 
 import Prelude
 
@@ -14,8 +14,8 @@ import Web.DOM.ParentNode (QuerySelector(..))
 
 import FourColors.Game as Game
 
-main :: Effect Unit
-main = HAff.runHalogenAff do
+defaultMain :: Effect Unit
+defaultMain = HAff.runHalogenAff do
     body <- HAff.awaitBody
     appElement <- HAff.selectElement $ QuerySelector "div#app"
     case appElement of
