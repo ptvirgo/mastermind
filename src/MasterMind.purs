@@ -2,8 +2,7 @@ module MasterMind where
 
 import Prelude
 import Data.Array
-import Data.List (List(..), (:))
-import Data.List as List
+import Data.List (List(..), (:), fromFoldable, delete, elem)
 import Data.Tuple (Tuple(..), uncurry, fst, snd)
 import Data.Maybe
 import Effect (Effect)
@@ -64,20 +63,20 @@ takeTurn newGuess board = board { turns = snoc board.turns $ { guess: newGuess, 
 
 {- Default method to count the number of correct guesses -}
 defaultCorrect :: forall a. Eq a => Array a -> Array a -> Int
-defaultCorrect target guess = length <<< filter (uncurry (==)) <<< zip target $ guess
+defaultCorrect target guess = length <<< filter identity <<< zipWith (==) target $ guess
 
 {- Default method to count the number of partially correct guesses -}
 defaultPartial :: forall a. Eq a => Array a -> Array a -> Int
 defaultPartial target guess = countPartial 0 (map fst unmatched) (map snd unmatched)
   where
   unmatched :: List (Tuple a a)
-  unmatched = List.fromFoldable $ filter (uncurry (/=)) <<< zip target $ guess
+  unmatched = fromFoldable $ filter (uncurry (/=)) <<< zip target $ guess
 
   countPartial :: Int -> List a -> List a -> Int
   countPartial i _ Nil = i
 
   countPartial i available (g : gs)
-    | g `List.elem` available = countPartial (i + 1) (List.delete g available) gs
+    | g `elem` available = countPartial (i + 1) (delete g available) gs
     | otherwise = countPartial i available gs
 
 {- Default method to produce FeedBack.  Does not preserve ordering. -}
