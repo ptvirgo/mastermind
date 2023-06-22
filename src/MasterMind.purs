@@ -3,11 +3,9 @@ module MasterMind where
 import Prelude
 import Data.Array
 import Data.List (List(..), (:), fromFoldable, delete, elem)
-import Data.Tuple (Tuple(..), uncurry, fst, snd)
-import Data.Maybe
+import Data.Tuple (Tuple, fst, snd, uncurry)
+
 import Effect (Effect)
-import Effect.Class (class MonadEffect)
-import Effect.Random (randomInt)
 
 import Test.QuickCheck (class Arbitrary, arbitrary)
 import Test.QuickCheck.Gen (randomSampleOne)

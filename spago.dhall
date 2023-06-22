@@ -10,7 +10,7 @@ When creating a new Spago project, you can use
 `spago init --no-comments` or `spago init -C`
 to generate this file without the comments in this block.
 -}
-{ name = "my-project"
+{ name = "mastermind"
 , dependencies =
   [ "arrays"
   , "effect"
@@ -20,7 +20,6 @@ to generate this file without the comments in this block.
   , "maybe"
   , "prelude"
   , "quickcheck"
-  , "random"
   , "strings"
   , "test-unit"
   , "tuples"

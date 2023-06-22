@@ -4,7 +4,7 @@ import Prelude
 
 {- import Control.Monad.Trans.Class (lift) -}
 
-import Data.Maybe
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 
 import Halogen.Aff as HAff

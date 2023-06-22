@@ -2,14 +2,13 @@ module FourColors.Board where
 
 import Prelude
 
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.String (toLower)
 
 import Effect.Class (class MonadEffect)
 
 import Halogen as H
 import Halogen.HTML as HH
-import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
 
 import Halogen.Svg.Elements as SVG
