@@ -5,7 +5,6 @@ import Control.Applicative (when)
 
 {- import Control.Monad.Trans.Class (lift) -}
 import Data.Array
-import Data.Array.NonEmpty as NE
 import Data.String (toLower)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..), uncurry, fst, snd)
@@ -23,10 +22,10 @@ import Halogen.VDom.Driver (runUI)
 import Halogen.Svg.Elements as SVG
 import Halogen.Svg.Attributes as SVGAttr
 
-import Test.QuickCheck (class Arbitrary, arbitrary)
-import Test.QuickCheck.Gen (elements)
 import Type.Proxy (Proxy(..))
 import Web.HTML.Common (ClassName(..))
+
+import FourColors.Core
 import MasterMind as MM
 
 {- Main Loop -}
@@ -53,52 +52,6 @@ svgRatio = 0.9
 {- gameLength is how many guesses the player is allowed to make before the game ends -}
 gameLength :: Int
 gameLength = 10
-
-{- Data Definitions -}
-{- Color represents one of the guessable colors -}
-data Color
-  = Red
-  | Orange
-  | Yellow
-  | Green
-  | Blue
-  | Purple
-
-derive instance eqColor :: Eq Color
-derive instance ordColor :: Ord Color
-
-instance showColor :: Show Color where
-  show Red = "red"
-  show Orange = "orange"
-  show Yellow = "yellow"
-  show Green = "green"
-  show Blue = "blue"
-  show Purple = "purple"
-
-
-colors :: Array Color
-colors = [ Red, Orange, Yellow, Green, Blue, Purple ]
-
-instance arbColor :: Arbitrary Color where
-    arbitrary = elements <<< foldr NE.(:) (NE.singleton Red) <<< drop 1 $ colors
-
-data FourColors
-  = FourColors Color Color Color Color
-
-derive instance eqFourColors :: Eq FourColors
-
-instance showFourColors :: Show FourColors where
-  show (FourColors one two three four) = "FourColors " <> show one <> " " <> show two <> " " <> show three <> " " <> show four
-
-{- Convert a FourColor instance into a list, for cases when mapping or folding might be handy -}
-fcArray :: FourColors -> Array Color
-fcArray (FourColors a b c d) = [ a, b, c, d ]
-
-instance masterMindFourColors :: MM.MasterMind FourColors where
-  evalGuess target guess = MM.defaultFeedBack (fcArray target) (fcArray guess)
-
-instance arbFourColors :: Arbitrary FourColors where
-    arbitrary = FourColors <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
 
 {- Four Colors Game in Halogen -}
 type Slot

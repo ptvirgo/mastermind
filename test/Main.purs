@@ -11,6 +11,8 @@ import Test.Unit.Assert as Assert
 import Test.QuickCheck as QC
 
 import MasterMind
+
+import FourColors.Core
 import Main
 
 {-
