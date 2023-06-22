@@ -24,6 +24,7 @@ to generate this file without the comments in this block.
   , "strings"
   , "test-unit"
   , "tuples"
+  , "web-dom"
   , "web-html"
   ]
 , packages = ./packages.dhall
