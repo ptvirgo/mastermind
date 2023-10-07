@@ -17,9 +17,9 @@ This is probably most useful as one example of how a Purescript/Halogen app can 
 - There's a generic Mastermind module that establishes type classes and default logic for a Mastermind game.
 - There's a FourColors library that includes:
     1. A distinct core module with base types and class definitions.
-    2. Separate component modules for the major feautures of a board.
-    3. A single Game module & component that puts the sub compoenents together.
+    2. Separate component modules for the major features of a board.
+    3. A single Game module & component that puts the sub components together.
 
 I could imagine the `FourColors.Game` module being renamed to `FourColors.Main`.  Purescript is relatively obscure, so there are probably conventions I'm unaware of, but this should be a good example of how code can be organized into reusable and modular parts.
 
-On future projects, it might be handy to separate functions that operate on component state from their components, in order to allow unit testing.  Purescripts strong types make it easy to get away with being slightly lazy on that front.
+On future projects, it might be handy to separate functions that operate on component state from their components, in order to allow unit testing.  Purescript's strong types make it easy to get away with being slightly lazy on that front.
