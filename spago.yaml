@@ -1,0 +1,23 @@
+package:
+  name: mastermind
+  dependencies:
+  - arrays
+  - effect
+  - halogen
+  - halogen-svg-elems
+  - lists
+  - maybe
+  - prelude
+  - quickcheck
+  - strings
+  - test-unit
+  - tuples
+  - web-dom
+  - web-html
+  test:
+    main: Test.Main
+    dependencies:
+      - quickcheck
+workspace:
+  packageSet:
+    registry: 57.1.0 
