@@ -45,20 +45,7 @@ type Board target
     , turns :: Array (Turn target)
     }
 
-{- Arguments should take form `evalGuess target guess` so that a curried `evalGuess target` function is easy to produce`-}
-class MasterMind target where
-  evalGuess :: target -> target -> Array FeedBack
-
-new :: forall target. MasterMind target => target -> Board target
-new target = { target: target, turns: mempty }
-
-initialize :: forall target. MasterMind target => Arbitrary target => Effect (Board target)
-initialize = do
-  target <- randomSampleOne arbitrary
-  pure $ new target
-
-takeTurn :: forall target. MasterMind target => target -> Board target -> Board target
-takeTurn newGuess board = board { turns = snoc board.turns $ { guess: newGuess, feedback: evalGuess board.target newGuess } }
+{- Default functions -}
 
 {- Default method to count the number of correct guesses -}
 defaultCorrect :: forall a. Eq a => Array a -> Array a -> Int
@@ -81,3 +68,20 @@ defaultPartial target guess = countPartial 0 (map fst unmatched) (map snd unmatc
 {- Default method to produce FeedBack.  Does not preserve ordering. -}
 defaultFeedBack :: forall a. Eq a => Array a -> Array a -> Array FeedBack
 defaultFeedBack target guess = replicate (defaultCorrect target guess) Correct <> replicate (defaultPartial target guess) Partial
+
+{- Class Interface -}
+
+{- Arguments should take form `evalGuess target guess` so that a curried `evalGuess target` function is easy to produce`-}
+class MasterMind target where
+  evalGuess :: target -> target -> Array FeedBack
+
+new :: forall target. MasterMind target => target -> Board target
+new target = { target: target, turns: mempty }
+
+initialize :: forall target. MasterMind target => Arbitrary target => Effect (Board target)
+initialize = do
+  target <- randomSampleOne arbitrary
+  pure $ new target
+
+takeTurn :: forall target. MasterMind target => target -> Board target -> Board target
+takeTurn newGuess board = board { turns = snoc board.turns $ { guess: newGuess, feedback: evalGuess board.target newGuess } }

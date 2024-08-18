@@ -1,24 +1,18 @@
 module FourColors.Chooser where
 
 import Prelude
-
 {- import Control.Monad.Trans.Class (lift) -}
 import Data.Maybe (Maybe(..), fromMaybe)
-
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
 import Halogen.HTML.Properties as HP
-
 import Halogen.Svg.Elements as SVG
 import Halogen.Svg.Attributes as SVGAttr
-
 import Web.HTML.Common (ClassName(..))
-
 import FourColors.Core (Color, FourColors(..), colors)
 
 {- `chooser` Component allows the player to prepare and submit guesses.  Handles player color selections internally, but passes submitted guesses to the parent element via Output. -}
-
 type State
   = { active :: Boolean
     , pick :: Maybe Color
@@ -70,8 +64,11 @@ component pegSize swatchSize fillRatio =
   handleAction (SetPick c) = H.modify_ \state -> state { pick = Just c }
 
   handleAction SetOne = H.modify_ \state -> state { one = state.pick }
+
   handleAction SetTwo = H.modify_ \state -> state { two = state.pick }
+
   handleAction SetThree = H.modify_ \state -> state { three = state.pick }
+
   handleAction SetFour = H.modify_ \state -> state { four = state.pick }
 
   handleAction (Receive input) = H.modify_ \state -> state { active = input.active }

@@ -1,26 +1,19 @@
 module FourColors.Board where
 
 import Prelude
-
 import Data.Maybe (Maybe(..))
 import Data.String (toLower)
-
 import Effect.Class (class MonadEffect)
-
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Properties as HP
-
 import Halogen.Svg.Elements as SVG
 import Halogen.Svg.Attributes as SVGAttr
-
 import Web.HTML.Common (ClassName(..))
-
 import FourColors.Core
 import MasterMind as MM
 
 {- `board` component displays prevously taken turns, including feedback. It does not produce outpput, but a query to add & evaluate a new turn will return a boolean indicating whether the turn was a game-winning guess -}
-
 type State
   = Maybe (MM.Board FourColors)
 

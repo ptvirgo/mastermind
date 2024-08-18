@@ -12,7 +12,7 @@ import Halogen.VDom.Driver (runUI)
 
 import Web.DOM.ParentNode (QuerySelector(..))
 
-import FourColors.Game as Game
+import FourColors.OldGame as Game
 
 defaultMain :: Effect Unit
 defaultMain = HAff.runHalogenAff do

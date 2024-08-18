@@ -6,7 +6,7 @@ This is a Purescript implementation of the classic **Mastermind** game.  There's
 
 ## Build
 
-    $ spago bundle-app -t dist/app.js
+    $ spago bundle --outfile dist/app.js
 
 Then get your browser to `dist/index.html`, by whatever server you can.
 

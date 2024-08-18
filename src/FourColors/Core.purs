@@ -1,13 +1,10 @@
 module FourColors.Core where
 
 import Prelude
-
 import Data.Array
 import Data.Array.NonEmpty as NE
-
 import Test.QuickCheck (class Arbitrary, arbitrary)
 import Test.QuickCheck.Gen (elements)
-
 import MasterMind (class MasterMind, defaultFeedBack)
 
 {- Color represents one of the guessable colors -}
@@ -20,6 +17,7 @@ data Color
   | Purple
 
 derive instance eqColor :: Eq Color
+
 derive instance ordColor :: Ord Color
 
 instance showColor :: Show Color where
@@ -34,7 +32,7 @@ colors :: Array Color
 colors = [ Red, Orange, Yellow, Green, Blue, Purple ]
 
 instance arbColor :: Arbitrary Color where
-    arbitrary = elements <<< foldr NE.(:) (NE.singleton Red) <<<  drop 1 $ colors
+  arbitrary = elements <<< NE.cons' Red <<< drop 1 $ colors
 
 data FourColors
   = FourColors Color Color Color Color
@@ -52,4 +50,4 @@ instance masterMindFourColors :: MasterMind FourColors where
   evalGuess target guess = defaultFeedBack (fcArray target) (fcArray guess)
 
 instance arbFourColors :: Arbitrary FourColors where
-    arbitrary = FourColors <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
+  arbitrary = FourColors <$> arbitrary <*> arbitrary <*> arbitrary <*> arbitrary
