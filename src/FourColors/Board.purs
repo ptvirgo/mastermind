@@ -1,6 +1,7 @@
 module FourColors.Board where
 
 import Prelude
+import Data.Array (fromFoldable)
 import Data.Maybe (Maybe(..))
 import Data.String (toLower)
 import Effect.Class (class MonadEffect)
@@ -10,70 +11,60 @@ import Halogen.HTML.Properties as HP
 import Halogen.Svg.Elements as SVG
 import Halogen.Svg.Attributes as SVGAttr
 import Web.HTML.Common (ClassName(..))
-import FourColors.Core
-import MasterMind as MM
+import FourColors.Game (Color, FeedBack, Four)
 
-{- `board` component displays prevously taken turns, including feedback. It does not produce outpput, but a query to add & evaluate a new turn will return a boolean indicating whether the turn was a game-winning guess -}
+{- `board` component displays prevously taken turns, including feedback. -}
+type Turn
+  = { guess :: Four Color
+    , feedback :: Array FeedBack
+    }
+
 type State
-  = Maybe (MM.Board FourColors)
+  = Array Turn
 
-{- Randomly generating the target is an effect. Therefore the initial state has to be `Nothing` and the mkComponent step must trigger `Initialize`. -}
+type Input
+  = Array Turn
+
 data Action
-  = Initialize
+  = Receive Input
 
-data Query a
-  = EvalTurn FourColors (Boolean -> a)
-  | Restart a
+pegSize :: Number
+pegSize = 30.0
 
-component :: forall input output m. MonadEffect m => Number -> Number -> H.Component Query input output m
-component pegSize fillRatio =
+component :: forall output query m. MonadEffect m => H.Component query Input output m
+component =
   H.mkComponent
     { initialState
     , render
     , eval:
         H.mkEval
           $ H.defaultEval
-              { initialize = Just Initialize
-              , handleAction = handleAction
-              , handleQuery = handleQuery
+              { handleAction = handleAction
+              , receive = Just <<< Receive
               }
     }
   where
-  initialState :: input -> State
-  initialState _ = Nothing
+  initialState :: Input -> State
+  initialState = identity
 
   handleAction :: Action -> H.HalogenM State Action () output m Unit
-  handleAction Initialize = do
-    b <- H.liftEffect MM.initialize
-    H.modify_ \_ -> Just b
-
-  handleQuery :: forall action a. Query a -> H.HalogenM State action () output m (Maybe a)
-  handleQuery (EvalTurn guess reply) = do
-    H.modify_ \state -> (MM.takeTurn guess) <$> state
-    newState <- H.get
-    pure $ (reply <<< (\b -> b.target == guess)) <$> newState
-
-  handleQuery (Restart a) = do
-    b <- H.liftEffect MM.initialize
-    H.modify_ \_ -> Just b
-    pure $ Just a
+  handleAction (Receive input) = H.put input
 
   render :: State -> H.ComponentHTML Action () m
-  render Nothing = HH.p_ [ HH.text "Loading Board" ]
-
-  render (Just b) =
+  render state =
     HH.div
       [ HP.id "board" ]
-      $ map renderTurn b.turns
+      $ map renderTurn state
 
-  renderTurn :: forall w i. MM.Turn FourColors -> HH.HTML w i
-  renderTurn t =
+  renderTurn :: forall w i. Turn -> HH.HTML w i
+  renderTurn turn =
     HH.div
       [ HP.classes [ ClassName "turn" ] ]
       [ HH.div [ HP.classes [ ClassName "guess" ] ]
-          $ map renderPeg (fcArray t.guess)
+          $ map renderPeg
+          $ fromFoldable turn.guess
       , HH.div [ HP.classes [ ClassName "feedback" ] ]
-          $ map renderFeedBack t.feedback
+          $ map renderFeedBack turn.feedback
       ]
 
   renderPeg :: forall w i. Color -> HH.HTML w i
@@ -83,22 +74,23 @@ component pegSize fillRatio =
       , SVGAttr.width pegSize
       ]
       [ SVG.circle
-          [ SVGAttr.r (pegSize / 2.0 * fillRatio)
+          [ SVGAttr.r (pegSize / 2.0 - 2.0)
           , SVGAttr.cx (pegSize / 2.0)
           , SVGAttr.cy (pegSize / 2.0)
           , SVGAttr.classes [ ClassName $ show color ]
           ]
       ]
 
-  renderFeedBack :: forall w i. MM.FeedBack -> HH.HTML w i
+  renderFeedBack :: forall w i. FeedBack -> HH.HTML w i
   renderFeedBack fb =
     SVG.svg
       [ SVGAttr.height pegSize
       , SVGAttr.width pegSize
       ]
       [ SVG.rect
-          [ SVGAttr.width $ pegSize * fillRatio
-          , SVGAttr.height $ pegSize * fillRatio
+          [ SVGAttr.width $ pegSize - 5.0
+          , SVGAttr.height $ pegSize - 5.0
+          , SVGAttr.transform [ SVGAttr.Translate 2.5 2.5 ]
           , SVGAttr.classes [ ClassName <<< toLower <<< show $ fb ]
           ]
       ]

@@ -6,20 +6,10 @@ This is a Purescript implementation of the classic **Mastermind** game.  There's
 
 ## Build
 
-    $ spago bundle --outfile dist/app.js
+For the Four Colors demo game:
 
-Then get your browser to `dist/index.html`, by whatever server you can.
+1. convert MasterMind.Main.defaultMain to Main.main
+2. `$ spago bundle --outfile dist/app.js`
+3. get your browser to `dist/index.html`, by whatever server you can
 
-## Code Commentary
-
-This is probably most useful as one example of how a Purescript/Halogen app can be organized.
-
-- There's a generic Mastermind module that establishes type classes and default logic for a Mastermind game.
-- There's a FourColors library that includes:
-    1. A distinct core module with base types and class definitions.
-    2. Separate component modules for the major features of a board.
-    3. A single Game module & component that puts the sub components together.
-
-I could imagine the `FourColors.Game` module being renamed to `FourColors.Main`.  Purescript is relatively obscure, so there are probably conventions I'm unaware of, but this should be a good example of how code can be organized into reusable and modular parts.
-
-On future projects, it might be handy to separate functions that operate on component state from their components, in order to allow unit testing.  Purescript's strong types make it easy to get away with being slightly lazy on that front.
+It's not saved under Main by default because this appears to cause problems when using the library as an import.  Likely, for a more serious project, it'd make sense to separate the library and game into distinct code bases.

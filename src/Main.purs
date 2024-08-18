@@ -1,4 +1,4 @@
-module Mastermind.Main where
+module MasterMind.Main where
 
 import Prelude
 
@@ -12,7 +12,7 @@ import Halogen.VDom.Driver (runUI)
 
 import Web.DOM.ParentNode (QuerySelector(..))
 
-import FourColors.OldGame as Game
+import FourColors.Primary as Game
 
 defaultMain :: Effect Unit
 defaultMain = HAff.runHalogenAff do

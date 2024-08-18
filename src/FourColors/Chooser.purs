@@ -1,7 +1,6 @@
 module FourColors.Chooser where
 
 import Prelude
-{- import Control.Monad.Trans.Class (lift) -}
 import Data.Maybe (Maybe(..), fromMaybe)
 import Halogen as H
 import Halogen.HTML as HH
@@ -10,9 +9,10 @@ import Halogen.HTML.Properties as HP
 import Halogen.Svg.Elements as SVG
 import Halogen.Svg.Attributes as SVGAttr
 import Web.HTML.Common (ClassName(..))
-import FourColors.Core (Color, FourColors(..), colors)
+import FourColors.Game (Color, Four(..), colors)
 
 {- `chooser` Component allows the player to prepare and submit guesses.  Handles player color selections internally, but passes submitted guesses to the parent element via Output. -}
+
 type State
   = { active :: Boolean
     , pick :: Maybe Color
@@ -22,8 +22,26 @@ type State
     , four :: Maybe Color
     }
 
+setActive :: Boolean -> State -> State
+setActive active state = state { active = active }
+
+setPick :: Color -> State -> State
+setPick color state = state { pick = Just color }
+
+setOne :: State -> State
+setOne state = state { one = state.pick }
+
+setTwo :: State -> State
+setTwo state = state { two = state.pick }
+
+setThree :: State -> State
+setThree state = state { three = state.pick }
+
+setFour :: State -> State
+setFour state = state { four = state.pick }
+
 type Input
-  = { active :: Boolean }
+  = Boolean
 
 data Action
   = SetPick Color
@@ -32,13 +50,21 @@ data Action
   | SetThree
   | SetFour
   | Receive Input
-  | Submit FourColors
+  | Submit (Four Color)
+  | ClickRestart
 
 data Output
-  = TakeTurn FourColors
+  = TakeTurn (Four Color)
+  | Restart
 
-component :: forall query m. Number -> Number -> Number -> H.Component query Input Output m
-component pegSize swatchSize fillRatio =
+pegSize :: Number
+pegSize = 60.0
+
+swatchSize :: Number
+swatchSize = 40.0
+
+component :: forall query m. H.Component query Input Output m
+component =
   H.mkComponent
     { initialState
     , render
@@ -52,7 +78,7 @@ component pegSize swatchSize fillRatio =
   where
   initialState :: Input -> State
   initialState input =
-    { active: input.active
+    { active: input
     , pick: Nothing
     , one: Nothing
     , two: Nothing
@@ -61,26 +87,33 @@ component pegSize swatchSize fillRatio =
     }
 
   handleAction :: Action -> H.HalogenM State Action () Output m Unit
-  handleAction (SetPick c) = H.modify_ \state -> state { pick = Just c }
+  handleAction (SetPick c) = H.modify_ $ setPick c
 
-  handleAction SetOne = H.modify_ \state -> state { one = state.pick }
+  handleAction SetOne = H.modify_ $ setOne
 
-  handleAction SetTwo = H.modify_ \state -> state { two = state.pick }
+  handleAction SetTwo = H.modify_ $ setTwo
 
-  handleAction SetThree = H.modify_ \state -> state { three = state.pick }
+  handleAction SetThree = H.modify_ $ setThree
 
-  handleAction SetFour = H.modify_ \state -> state { four = state.pick }
+  handleAction SetFour = H.modify_ $ setFour
 
-  handleAction (Receive input) = H.modify_ \state -> state { active = input.active }
+  handleAction (Receive input) = H.modify_ $ setActive input
 
-  handleAction (Submit fc) = H.raise $ TakeTurn fc
+  handleAction (Submit guess) = H.raise $ TakeTurn guess
+
+  handleAction ClickRestart = H.raise $ Restart
 
   render :: State -> H.ComponentHTML Action () m
-  render cs =
-    HH.div [ HP.classes (chooserClasses cs.active), HP.id "chooser" ]
-      [ HH.div_ $ [ renderPeg cs.one SetOne, renderPeg cs.two SetTwo, renderPeg cs.three SetThree, renderPeg cs.four SetFour ]
-      , HH.div_ $ map (renderColor cs.pick) colors
-      , HH.div_ [ renderSubmit cs ]
+  render state =
+    HH.div [ HP.classes (chooserClasses state.active), HP.id "chooser" ]
+      [ HH.div_ $ [ renderPeg state.one SetOne, renderPeg state.two SetTwo, renderPeg state.three SetThree, renderPeg state.four SetFour ]
+      , HH.div_ $ map (renderColor state.pick) colors
+      , HH.div_
+          [ if state.active then
+              renderSubmit state
+            else
+              renderRestart
+          ]
       ]
 
   chooserClasses :: Boolean -> Array ClassName
@@ -95,7 +128,7 @@ component pegSize swatchSize fillRatio =
       , SVGAttr.width pegSize
       ]
       [ SVG.circle
-          [ SVGAttr.r (pegSize / 2.0 * fillRatio)
+          [ SVGAttr.r (pegSize / 2.0 - 5.0)
           , SVGAttr.cx (pegSize / 2.0)
           , SVGAttr.cy (pegSize / 2.0)
           , SVGAttr.classes $ pegClasses mc
@@ -114,8 +147,8 @@ component pegSize swatchSize fillRatio =
       ]
       [ SVG.rect
           [ SVGAttr.classes $ colorClasses pick c
-          , SVGAttr.height $ swatchSize * fillRatio - 5.0
-          , SVGAttr.width $ swatchSize * fillRatio - 5.0
+          , SVGAttr.height $ swatchSize - 5.0
+          , SVGAttr.width $ swatchSize - 5.0
           , SVGAttr.x 2.5
           , SVGAttr.y 2.5
           , HE.onClick (\_ -> SetPick c)
@@ -128,11 +161,9 @@ component pegSize swatchSize fillRatio =
     picked = if Just c == pick then "selected" else "unselected"
 
   renderSubmit :: State -> H.ComponentHTML Action () m
-  renderSubmit cs = case FourColors <$> cs.one <*> cs.two <*> cs.three <*> cs.four of
-    Just fc -> renderSubmitButton cs.active fc
+  renderSubmit state = case Four <$> state.one <*> state.two <*> state.three <*> state.four of
+    Just guess -> HH.button [ HE.onClick (\_ -> Submit guess) ] [ HH.text "Guess" ]
     Nothing -> HH.text ""
 
-  renderSubmitButton :: Boolean -> FourColors -> H.ComponentHTML Action () m
-  renderSubmitButton active fc =
-    HH.button [ HP.disabled $ not active, HE.onClick (\_ -> Submit fc) ]
-      [ HH.text "Guess" ]
+  renderRestart :: H.ComponentHTML Action () m
+  renderRestart = HH.button [ HE.onClick (\_ -> ClickRestart) ] [ HH.text "Restart" ]
